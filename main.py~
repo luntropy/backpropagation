@@ -1,0 +1,147 @@
+#!/usr/bin/python3
+
+import math
+import random
+
+class Connection:
+    def __init__(self):
+        self.weight = None
+        self.left_neuron = None
+        self.right_neuron = None
+
+class Neuron:
+    def __init__(self):
+        self.bias_connection = None
+        self.output = None
+        self.connections = []
+
+    # Input function - sum of the products of weights and neuron state
+    def calculate_output(self):
+        result = 0
+
+        for con in self.connections:
+            neuron = con.left_neuron
+
+            con_weight = con.weight
+            neuron_output = neuron.output
+
+            result = result + (con_weight * neuron_output)
+
+        if self.bias_connection:
+            result = result + (self.bias_connection.weight * self.bias_connection.left_neuron.output)
+        self.output = self.g(result)
+
+    # Activation function
+    def g(self, x):
+        return self.sigmoid(x)
+
+    def sigmoid(self, x):
+        return 1.0 / (1.0 + math.exp(-x))
+
+class NeuralNetwork():
+    def __init__(self):
+        self.trained = False
+        self.input_layer = []
+        # self.hidden_layer = []
+        self.output_neuron = None
+        # self.rand_w_multiplier = 1
+        # self.learning_rate = 0.9
+        # self.momentum = 0.7
+
+        # Logical AND
+        self.inputs_and = [ [1, 1], [1, 0], [0, 1], [0, 0] ]
+        self.exp_outputs_and = [ 1, 0, 0, 0 ]
+        self.result_outputs = []
+
+    def create_neurons(self, value_one, value_two):
+        # Create input neurons
+        neuron_input_one = Neuron()
+        neuron_input_one.output = value_one
+
+        neuron_input_two = Neuron()
+        neuron_input_two.output = value_two
+
+        # Add them to the input layer
+        self.input_layer.append(neuron_input_one)
+        self.input_layer.append(neuron_input_two)
+
+        # Create output neuron
+        neuron_output = Neuron()
+        self.output_neuron = neuron_output
+
+        # Add bias
+        bias_neuron = Neuron()
+        bias_neuron.output = 1
+        neuron_bias_con = Connection()
+
+        random_value = random.uniform(-0.5, 0.5)
+        neuron_bias_con.weight = random_value
+
+        neuron_bias_con.left_neuron =  bias_neuron
+        neuron_bias_con.right_neuron = neuron_output
+        neuron_output.bias_connection = neuron_bias_con
+
+        # Add connections
+        connection_one = Connection()
+        connection_one.left_neuron = neuron_input_one
+        connection_one.right_neuron = neuron_output
+
+        random_value = random.uniform(-0.5, 0.5)
+        connection_one.weight = random_value
+
+        connection_two = Connection()
+        connection_two.left_neuron = neuron_input_two
+        connection_two.right_neuron = neuron_output
+
+        random_value = random.uniform(-0.5, 0.5)
+        connection_two.weight = random_value
+
+        neuron_output.connections.append(connection_one)
+        neuron_output.connections.append(connection_two)
+
+    def input(self, value_one, value_two):
+        self.input_layer[0].output = value_one
+        self.input_layer[1].output = value_two
+
+    def train(self):
+        self.create_neurons(0, 0)
+
+        for i in range(0, len(self.inputs_and)):
+            self.input(self.inputs_and[i][0], self.inputs_and[i][1])
+
+            error = 100
+            iter = 0
+
+            print('TRAINING')
+            print(self.inputs_and[i][0], self.inputs_and[i][1], ':')
+            while iter <= 100000:
+                iter = iter + 1
+
+                self.output_neuron.calculate_output()
+                output = self.output_neuron.output
+                expected_output = self.exp_outputs_and[i]
+
+                error = output * (1 - output) * (expected_output - output)
+
+                for con in self.output_neuron.connections:
+                    out = con.left_neuron.output
+                    con.weight = con.weight + 0.1 * error * out
+
+                self.output_neuron.bias_connection.weight = self.output_neuron.bias_connection.weight + 0.1 * error * self.output_neuron.bias_connection.left_neuron.output
+
+            print('Error: ', error)
+            print('Result', self.output_neuron.output)
+
+    def test(self, value_one, value_two):
+        self.input(value_one, value_two)
+        self.output_neuron.calculate_output()
+        print('Result: ', self.output_neuron.output)
+
+if __name__ == '__main__':
+    neural_network = NeuralNetwork()
+    neural_network.train()
+
+    x1_val = int(input())
+    x2_val = int(input())
+    print("test final")
+    neural_network.test(x1_val, x2_val)
