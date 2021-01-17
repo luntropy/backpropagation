@@ -377,6 +377,8 @@ class NeuralNetwork():
         print('Percentages: {0}'.format(output))
 
 if __name__ == '__main__':
+    random.seed(3)
+
     inputs_and = [ [1, 1], [1, 0], [0, 1], [0, 0] ]
     exp_outputs_and = [ 1, 0, 0, 0 ]
 
